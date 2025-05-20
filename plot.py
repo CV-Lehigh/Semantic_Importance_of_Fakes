@@ -76,11 +76,15 @@ def cosine_distance(a, b):
     b_flat = b.view(B_normalized.shape[0], -1)
     return 1 - torch.nn.functional.cosine_similarity(a_flat, b_flat, dim=-1)
 
-def plot_new_data(sim_data, split):
+def plot_new_data(sim_data, split, selection):
     # Plot
     colours = ['red','green', 'purple', 'blue', 'orange', 'brown']
-    labels = ['close,sphere','close,linear','close,PAID', 'far,sphere','far,linear','far,PAID' ]
-    save_figure = ['Image_far_sphere', 'image_close_sphere', 'image_far_paid', 'image_close_sphere']
+    if selection == 'image_':
+        labels = ['close sphere','close PAID']
+        save_figure = ['image_close_sphere', 'image_close_PAID']
+    else: 
+        labels = ['close sphere','close linear','close PAID']
+        save_figure = ['caption_close_sphere', 'caption_close_linear', 'caption_close_PAID']
     # try:
     np_array = np.array(sim_data[split])
     x = np_array[:,0]
@@ -92,67 +96,73 @@ def plot_new_data(sim_data, split):
     plt.ylabel('CLIP Score')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f'{save_figure[split]}_redone.png')
+    plt.savefig(f'{save_figure[split]}.png')
     plt.clf()
 
-    # except:
-    #     print("data not fed yet")
 
-similarity_data = [[],[],[],[],[],[]]
-file_paths = [[],[],[],[],[],[]]
-interp_method = 0
-update = 0
-different_interpolations = ['image_prompt_far_sphere_768','image_prompt_close_sphere_768','image_prompt_far_PAID', 'image_prompt_close_PAID']
-for interpolation in different_interpolations:
-    folder_path = f'../../../data/jpk322/laion-5B/{interpolation}'
-    ext = ''
-    start = '0'
-    emb_str = 'embedding'
-    if 'PAID' not in interpolation:
-        ext = 'interpolation_lstitms-0_1_step-'
-        start = 'start'
-        emb_str = 'embeddings'
-    print(f"now working on: {interpolation}")
-    for experiment in tqdm(os.listdir(f'{folder_path}')):
-        try:
-            img1_path = f"{folder_path}/{experiment}/images/{ext}{start}.png"
-            emb_1_path = f"{folder_path}/{experiment}/{emb_str}/{ext}{start}.pt"  
-            num_files = len(os.listdir(f'{folder_path}/{experiment}/images/'))
+different_interpolations = [['image_prompt_close_sphere_768','image_prompt_close_PAID'],  ['prompt_close_sphere_768', 'prompt_close_linear_768', 'prompt_close_PAID_0']]
+for index in range(len(different_interpolations)):
+    similarity_data = [[],[],[]]
+    file_paths = [[],[],[]]
 
-            for idx in range(1,(num_files-2)):
-                img2_path = f"{folder_path}/{experiment}/images/{ext}{idx}.png"
-                emb_2_path = f"{folder_path}/{experiment}/{emb_str}/{ext}{idx}.pt"
+    interp_method = 0
+    update = 0
+    interpolation_set = different_interpolations[index]
+    if index == 0:
+        selection = 'image_'
+    else:
+        selection == 'caption_'
+    for interpolation in interpolation_set:
+        #YOUR_PATH_HERE
+        folder_path = f'YOUR_PATH_HERE/laion-5B/{interpolation}'
+        ext = ''
+        start = '0'
+        emb_str = 'embedding'
+        if 'PAID' not in interpolation:
+            ext = 'interpolation_lstitms-0_1_step-'
+            start = 'start'
+            emb_str = 'embeddings'
+        print(f"now working on: {interpolation}")
+        for experiment in tqdm(os.listdir(f'{folder_path}')):
+            try:
+                img1_path = f"{folder_path}/{experiment}/images/{ext}{start}.png"
+                emb_1_path = f"{folder_path}/{experiment}/{emb_str}/{ext}{start}.pt"  
+                num_files = len(os.listdir(f'{folder_path}/{experiment}/images/'))
 
-                # Convert images to tensors
-                img1 = load_image(img1_path)
-                img2 = load_image(img2_path)
+                for idx in range(1,(num_files-2)):
+                    img2_path = f"{folder_path}/{experiment}/images/{ext}{idx}.png"
+                    emb_2_path = f"{folder_path}/{experiment}/{emb_str}/{ext}{idx}.pt"
 
-                #Get embeddings
-                if 'PAID' not in interpolation:
-                    emb1 = torch.load(emb_1_path)['image_embed']
-                    emb2 = torch.load(emb_2_path)['image_embed']
-                else:
-                    emb1 = torch.load(emb_1_path)
-                    emb2 = torch.load(emb_2_path)
+                    # Convert images to tensors
+                    img1 = load_image(img1_path)
+                    img2 = load_image(img2_path)
 
-                euclid_dist = normalized_euclidean_distance_torch(emb1, emb2).item()
+                    #Get embeddings
+                    if 'PAID' not in interpolation:
+                        emb1 = torch.load(emb_1_path)['image_embed']
+                        emb2 = torch.load(emb_2_path)['image_embed']
+                    else:
+                        emb1 = torch.load(emb_1_path)
+                        emb2 = torch.load(emb_2_path)
+
+                    euclid_dist = normalized_euclidean_distance_torch(emb1, emb2).item()
 
 
-                # Compute image space
-                lpips_distance = loss_fn(img1, img2).item()
-                clip_sim = clip_image_similarity(img1_path, img2_path)
-                score_clip = max(100*clip_sim,0)
-                similarity_data[interp_method].append([lpips_distance, score_clip, euclid_dist])
-                file_paths[interp_method].append([img1_path, img2_path])
-                
-                # Save
-                np.save('image_sim_data_final.npy', np.array(similarity_data, dtype=object))
-                np.save('image_file_paths_final.npy', np.array(file_paths, dtype=object))
-            if update % 25 == 0:
-                plot_new_data(similarity_data, interp_method)
-            update += 1
-        except:
-            print(f'Failed on experiment {experiment}')
-    interp_method +=1
+                    # Compute image space
+                    lpips_distance = loss_fn(img1, img2).item()
+                    clip_sim = clip_image_similarity(img1_path, img2_path)
+                    score_clip = max(100*clip_sim,0)
+                    similarity_data[interp_method].append([lpips_distance, score_clip, euclid_dist])
+                    file_paths[interp_method].append([img1_path, img2_path])
+                    
+                    # Save
+                    np.save(f'{selection}/{selection}sim_data_final.npy', np.array(similarity_data, dtype=object))
+                    np.save(f'{selection}/{selection}file_paths_final.npy', np.array(file_paths, dtype=object))
+                if update % 25 == 0:
+                    plot_new_data(similarity_data, interp_method, selection)
+                update += 1
+            except:
+                print(f'Failed on experiment {experiment}')
+        interp_method +=1
 
 
