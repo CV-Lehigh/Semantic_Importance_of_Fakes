@@ -74,12 +74,12 @@ def plot_new_data(sim_data, poly, function_type, selection= 'caption_'):
 
 
     if selection == 'image_':
-        fig = plt.figure(figsize=(8, 4))
+        fig = plt.figure(figsize=(10, 4))
         labels = ['close sphere','close PAID']
         gs = gridspec.GridSpec(1, 2, figure=fig)
         order = [[0,0], [0,1]]
     else:
-        fig = plt.figure(figsize=(12, 4))
+        fig = plt.figure(figsize=(15, 4))
         labels = ['close sphere','close linear', 'close PAID']
         gs = gridspec.GridSpec(1, 3, figure=fig)
         order = [[0,0], [0,1], [0,2]]
@@ -110,7 +110,7 @@ def plot_new_data(sim_data, poly, function_type, selection= 'caption_'):
             sorted_x = inliers[:, 0][sorted_indices]
             sorted_y = inliers[:, 1][sorted_indices]
 
-            with open(f'{selection}poly_10_func_{split}.pkl', 'wb') as f:
+            with open(f'{selection}/{selection}poly_10_func_{split}.pkl', 'wb') as f:
                 pickle.dump(initial_poly, f)
 
 
@@ -226,8 +226,8 @@ def plot_new_data(sim_data, poly, function_type, selection= 'caption_'):
             ax[split].axvline(x=sorted_x[left_idx], color='gray', label = 'Hard Cases',  linestyle='--')
             ax[split].axvline(x=sorted_x[right_idx], color='gray',  linestyle='--')
             split_score.append(x_min_slope)
-            print(left_idx)
-            print(right_idx)
+            # print(left_idx)
+            # print(right_idx)
 
         ax[split].fill_between(sorted_x, lower_bounds, upper_bounds, color=colours[split], alpha=0.3, label=r'$\pm  1 \sigma$')
         ax[split].set_xlabel('LPIPS', fontsize = 14)
@@ -253,11 +253,11 @@ options = ['caption_', 'image_']
 
 for selection in options:
 
-    sim_data = np.load(f'{selection}sim_data_final.npy', allow_pickle=True)
+    sim_data = np.load(f'{selection}/{selection}sim_data_final.npy', allow_pickle=True)
 
     os.makedirs(f'poly', exist_ok=True)
     plot_new_data(sim_data, 10, 'poly', selection=selection)
-    np.save(f'{selection}split_score.npy', np.array(split_score, dtype=object))
-    np.save(f'{selection}bounds.npy', np.array(bounds, dtype=object))
-    np.save(f'{selection}x_bounds.npy',np.array(sorted_x_bounds, dtype=object))
-    np.save(f'{selection}hard_case.npy', np.array(cases, dtype=object))
+    np.save(f'{selection}/{selection}split_score.npy', np.array(split_score, dtype=object))
+    np.save(f'{selection}/{selection}bounds.npy', np.array(bounds, dtype=object))
+    np.save(f'{selection}/{selection}x_bounds.npy',np.array(sorted_x_bounds, dtype=object))
+    np.save(f'{selection}/{selection}hard_case.npy', np.array(cases, dtype=object))
