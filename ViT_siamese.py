@@ -390,7 +390,7 @@ easy_val_set = np.load('./data_selection/validation_easy_data.npy', allow_pickle
 hard_val_set = np.load('./data_selection/validation_hard_data.npy',  allow_pickle=True)
 
 data_easy = np.load(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only_data.npy', allow_pickle=True)
-data_easy_train, data_easy_val = generate_splits(data_easy)
+data_easy_train, data_easy_val = split_sets(data_easy, easy_val_set)
 
 
 train_dataset_easy = SiameseDataset(data_easy_train, transform=transform)
@@ -406,10 +406,7 @@ train(model, train_loader_easy, val_loader_easy, optimizer, criterion_trip, cont
 ############################# Hard case training  #####################
 # print('############################## Hard case training  #####################')
 # data_hard = np.load('./data_selection/1std_image_hard_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
-# data_hard_train, data_hard_val = generate_splits(data_hard)
-
-# np.save('./data_selection/image_validation_hard.npy', data_hard_val)
-
+# data_hard_train, data_hard_val = split_sets(data_hard, hard_val_set)
 
 # train_dataset_hard = SiameseDataset(data_hard_train, transform=transform)
 # val_dataset_hard = SiameseDataset(data_hard_val, transform=transform)
@@ -418,7 +415,7 @@ train(model, train_loader_easy, val_loader_easy, optimizer, criterion_trip, cont
 # val_loader_hard = DataLoader(val_dataset_hard, batch_size=128, shuffle=False)
 
 # try:
-#     model.load_state_dict(torch.load('../../../data/jpk322/laion-5B/model_paths/vit_siamese_easy_1_small_caption_all_close_only_image.pth'))
+#     model.load_state_dict(torch.load('best_model_path.pth'))
 #     print("Model loaded successfully!")
 
 #     train(model, train_loader_hard, val_loader_hard, optimizer, criterion_trip, epochs=2, ciriculum='hard', selection=selection)
