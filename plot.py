@@ -111,7 +111,7 @@ for index in range(len(different_interpolations)):
     if index == 0:
         selection = 'image_'
     else:
-        selection == 'caption_'
+        selection = 'caption_'
     for interpolation in interpolation_set:
         #YOUR_PATH_HERE
         folder_path = f'YOUR_PATH_HERE/laion-5B/{interpolation}'
