@@ -254,38 +254,6 @@ class DINOViTSiameseNetwork(nn.Module):
         out = feat2.view(b, c, feat2.shape[1], -1)  # [B, C, N, D]
         return feat1, out
     
-    
-# def single_class_loss(anchor,values,label=0, temperature =.2):
-#     if label == 1:
-#         anchor_feat = F.normalize(anchor.mean(dim=1), dim=-1)     # [1, 768]
-#         negatives_feat = F.normalize(values.mean(dim=1), dim=-1)  # [x, 768]
-
-#         # Cosine similarity
-#         similarities = torch.matmul(negatives_feat, anchor_feat.T).squeeze(1)  # [x]
-
-#         # Take top-k hard negatives
-#         top_k = 6
-#         topk_vals, _ = similarities.topk(k=min(top_k, negatives_feat.size(0)), largest=True)
-
-#         # Repel these: encourage similarity < margin
-#         margin = 0.3
-#         loss = F.relu(topk_vals - margin).mean()
-#         return loss
-    
-#     elif label == 0:
-#         # Compute cosine similarity between anchor and positives
-#         anchor_feat = F.normalize(anchor.mean(dim=1), dim=-1)     # [1, 768]
-#         positive_feat = F.normalize(values.mean(dim=1), dim=-1)   # [x, 768]
-
-#         # Cosine similarities
-#         logits = torch.matmul(anchor_feat, positive_feat.T) / temperature  # [1, x]
-
-#         # Target: highest similarity should be with correct positive (assume index 0)
-#         targets = torch.zeros(logits.shape[0], dtype=torch.long, device=logits.device)
-
-#         loss = F.cross_entropy(logits, targets)
-#         return loss
-    
 def contrastive_loss_func(anchor, pair, label, margin=.5):
     anchor = F.normalize(anchor, dim=-1) 
     pair = F.normalize(pair, dim=-1)
@@ -335,7 +303,7 @@ def triplet_loss(anchor, values, labels, margin=1.0):
     return loss.mean()
 
 
-def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double, epochs=10, ciriculum = 'easy'):
+def train(model, loader, val_loader, optimizer, criterion_trip, epochs=10, ciriculum = 'easy', selection = 'caption'):
     model.train()
     for epoch in range(epochs):
         total_loss = 0
@@ -345,9 +313,7 @@ def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double
             optimizer.zero_grad()
             original_outputs, manipulated_outputs = model(original, manipulations)
 
-            double_loss_  = torch.tensor(0.0).to(device)
             triplet_loss_ = torch.tensor(0.0).to(device)
-            double_count = 0
             triple_count = 0
 
             for index in range(original_outputs.shape[0]):
@@ -357,17 +323,8 @@ def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double
                 if amt[index] <= 1:
                     continue
 
-                if torch.all(itm_labels == 1):
-                    double_loss_ = double_loss_ + criterion_double(original_features, manipulated_features, 1)
-                    double_count += 1
-
-                elif torch.all(itm_labels == 0):
-                    double_loss_ = double_loss_ + criterion_double(original_features, manipulated_features, 0)
-                    double_count += 1
-                else:
-                    triplet_loss_ = triplet_loss_ + criterion_trip(original_features, manipulated_features, itm_labels)
-                    triple_count += 1
-            # loss =  triplet_loss_ /triple_count
+                triplet_loss_ = triplet_loss_ + criterion_trip(original_features, manipulated_features, itm_labels)
+                triple_count += 1
             
             loss = ((triplet_loss_)/triple_count)
             loss = loss.to(device)
@@ -387,8 +344,6 @@ def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double
                 img1, manipulations, labels, amt = img1.cuda(), manipulations.cuda(), labels.cuda().unsqueeze(1), amt
                 original_outputs, manipulated_outputs = model(img1, manipulations)
                 triplet_loss_value_eval = 0
-                double_loss_value_eval = 0
-                double_count = 0
                 triple_count = 0
                 for index in range(original_outputs.shape[0]):
                     original_features = original_outputs[index].unsqueeze(0)
@@ -397,26 +352,17 @@ def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double
                     if amt[index] <= 1:
                         continue
 
-                    if torch.all(itm_labels == 1):
-                        double_loss_value_eval = double_loss_value_eval + criterion_double(original_features, manipulated_features, 1)
-                        double_count += 1
-
-                    elif torch.all(itm_labels == 0):
-                        double_loss_value_eval = double_loss_value_eval + criterion_double(original_features, manipulated_features, 0)
-                        double_count += 1
-
-                    else:
-                        triplet_loss_value_eval = triplet_loss_value_eval + criterion_trip(original_features, manipulated_features, itm_labels)
-                        triple_count += 1
-                # val_loss += triplet_loss_value_eval /triple_count 
-                val_loss += ((1.0 * triplet_loss_value_eval)/triple_count)
+                    triplet_loss_value_eval = triplet_loss_value_eval + criterion_trip(original_features, manipulated_features, itm_labels)
+                    triple_count += 1
+                val_loss += ((triplet_loss_value_eval)/triple_count)
 
 
             avg_val_loss = val_loss / len(val_loader)
 
         if epoch == 0 or best_loss > val_loss:
             best_loss = val_loss
-        save_path = f'../../../data/jpk322/laion-5B/model_paths/vit_siamese_{ciriculum}_{epoch}_small_caption_all_close_only_image.pth'
+        # Your data Path #
+        save_path = f'YOUR_DATA_PATH/laion-5B/model_paths/vit_siamese_{ciriculum}_{epoch}_small_{selection}.pth'
         torch.save(model.state_dict(), save_path)
         print(save_path)
 
@@ -428,6 +374,7 @@ def train(model, loader, val_loader, optimizer, criterion_trip, criterion_double
 
 ############################## Easy case training  #####################
 print('############################## Easy case training  #####################')
+selection = '' #caption, image, all
 
 model = ViTSiameseNetworkSmall().to(device)
 if torch.cuda.device_count() > 1:
@@ -436,46 +383,44 @@ if torch.cuda.device_count() > 1:
 
 criterion_trip = triplet_loss
 contrastive_loss = contrastive_loss_func
-criterion_double = single_class_loss
 optimizer = AdamW(model.parameters(), lr=3e-5, weight_decay=1e-2)
 best_loss = float('inf')
 
-# easy_val_set = np.load('./data_selection/validation_easy.npy', allow_pickle=True)
+easy_val_set = np.load('./data_selection/validation_easy.npy', allow_pickle=True)
 hard_val_set = np.load('./data_selection/validation_hard.npy',  allow_pickle=True)
 
-# data_easy = np.load('./data_selection/1std_all_easy_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
-# data_easy_train, data_easy_val = generate_splits(data_easy)
-
-# np.save('./data_selection/all_validation_easy.npy', data_easy_val)
+data_easy = np.load(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
+data_easy_train, data_easy_val = generate_splits(data_easy)
 
 
-# train_dataset_easy = SiameseDataset(data_easy_train, transform=transform)
-# val_dataset_easy = SiameseDataset(data_easy_val, transform=transform)
+train_dataset_easy = SiameseDataset(data_easy_train, transform=transform)
+val_dataset_easy = SiameseDataset(data_easy_val, transform=transform)
 
-# train_loader_easy = DataLoader(train_dataset_easy, batch_size=128, shuffle=True)
-# val_loader_easy = DataLoader(val_dataset_easy, batch_size=128, shuffle=False)
+train_loader_easy = DataLoader(train_dataset_easy, batch_size=128, shuffle=True)
+val_loader_easy = DataLoader(val_dataset_easy, batch_size=128, shuffle=False)
 
-# train(model, train_loader_easy, val_loader_easy, optimizer, criterion_trip, contrastive_loss, epochs=10)
+train(model, train_loader_easy, val_loader_easy, optimizer, criterion_trip, contrastive_loss, epochs=3, selection = selection)
 
+
+################### Find the best easy model then Run Hard set #################################################################
 ############################# Hard case training  #####################
-
 # print('############################## Hard case training  #####################')
-data_hard = np.load('./data_selection/1std_image_hard_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
-data_hard_train, data_hard_val = generate_splits(data_hard)
+# data_hard = np.load('./data_selection/1std_image_hard_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
+# data_hard_train, data_hard_val = generate_splits(data_hard)
 
-np.save('./data_selection/image_validation_hard.npy', data_hard_val)
+# np.save('./data_selection/image_validation_hard.npy', data_hard_val)
 
 
-train_dataset_hard = SiameseDataset(data_hard_train, transform=transform)
-val_dataset_hard = SiameseDataset(data_hard_val, transform=transform)
+# train_dataset_hard = SiameseDataset(data_hard_train, transform=transform)
+# val_dataset_hard = SiameseDataset(data_hard_val, transform=transform)
 
-train_loader_hard = DataLoader(train_dataset_hard, batch_size=128, shuffle=True)
-val_loader_hard = DataLoader(val_dataset_hard, batch_size=128, shuffle=False)
+# train_loader_hard = DataLoader(train_dataset_hard, batch_size=128, shuffle=True)
+# val_loader_hard = DataLoader(val_dataset_hard, batch_size=128, shuffle=False)
 
-try:
-    model.load_state_dict(torch.load('../../../data/jpk322/laion-5B/model_paths/vit_siamese_easy_1_small_caption_all_close_only_image.pth'))
-    print("Model loaded successfully!")
+# try:
+#     model.load_state_dict(torch.load('../../../data/jpk322/laion-5B/model_paths/vit_siamese_easy_1_small_caption_all_close_only_image.pth'))
+#     print("Model loaded successfully!")
 
-    train(model, train_loader_hard, val_loader_hard, optimizer, criterion_trip, criterion_double, epochs=10, ciriculum='hard')
-except Exception as e:
-    print(f"Error loading model: {e}")
+#     train(model, train_loader_hard, val_loader_hard, optimizer, criterion_trip, epochs=2, ciriculum='hard', selection=selection)
+# except Exception as e:
+#     print(f"Error loading model: {e}")
