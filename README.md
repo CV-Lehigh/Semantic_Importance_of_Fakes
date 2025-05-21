@@ -16,6 +16,7 @@
 
 At this point you should have in your './data/laion-5B' folder 5 newly greated and populated folders image_prompt_close_PAID, image_prompt_close_sphere_768, prompt_close_PAID, prompt_close_sphere_768, prompt_close_linear_768
 Semantic Importance of Fakes 
+
  ┬  
  ├ [DIR] data/laion-5B   
      ┬  
