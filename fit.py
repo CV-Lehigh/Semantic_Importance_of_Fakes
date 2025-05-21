@@ -67,31 +67,28 @@ bounds = []
 function = []
 sorted_x_bounds = []
 cases = []
-def plot_new_data(sim_data, poly, function_type):
+def plot_new_data(sim_data, poly, function_type, selection= 'caption_'):
     # Plot
-    colours = ['blue', 'red', 'brown','purple']
-    labels = ['sphere','sphere','PAID', 'PAID']
-    # save_figure = ['close_sphere', 'close_linear', 'close_paid', 'far_sphere', 'far_linear', 'far_paid', 'all']
+    colours = ['red', 'green','purple']
     ax = ['ax1', 'ax2', 'ax3', 'ax4', 'ax5', 'ax6', 'ax7', 'ax8']
 
-    fig = plt.figure(figsize=(8, 4))
 
-    gs = gridspec.GridSpec(1, 2, figure=fig)
-    order = [[1,0], [0,0], [1,1], [0,1]]
+    if selection == 'image_':
+        fig = plt.figure(figsize=(8, 4))
+        labels = ['close sphere','close PAID']
+        gs = gridspec.GridSpec(1, 2, figure=fig)
+        order = [[0,0], [0,1]]
+    else:
+        fig = plt.figure(figsize=(12, 4))
+        labels = ['close sphere','close linear', 'close PAID']
+        gs = gridspec.GridSpec(1, 3, figure=fig)
+        order = [[0,0], [0,1], [0,2]]
 
-    for split in tqdm(range(4)):
-    # try:
-        if split == 6:
-            continue
-            # np_array = np.array(sim_data[0])
-            # for s in range(1,6):
-            #     np_array = np.concatenate((np_array, np.array(sim_data[s])))
-            # ax[split] = fig.add_subplot(gs[2, 0:3])
+    for split in tqdm(range(len(labels))):
 
 
-        else:
-            np_array =  np.array(sim_data[split])
-            ax[split] = fig.add_subplot(gs[order[split][1]])
+        np_array =  np.array(sim_data[split])
+        ax[split] = fig.add_subplot(gs[order[split][1]])
 
 
         x = np_array[:,0]
@@ -113,7 +110,7 @@ def plot_new_data(sim_data, poly, function_type):
             sorted_x = inliers[:, 0][sorted_indices]
             sorted_y = inliers[:, 1][sorted_indices]
 
-            with open(f'image_poly_10_func_{split}.pkl', 'wb') as f:
+            with open(f'{selection}poly_10_func_{split}.pkl', 'wb') as f:
                 pickle.dump(initial_poly, f)
 
 
@@ -226,19 +223,16 @@ def plot_new_data(sim_data, poly, function_type):
         ax[split].plot(sorted_x, y_pred, label=f'{labels[split]} best fit - MAE: {mae:.3f}', color=colours[split])
         ax[split].scatter(x_selected, y_selected, color=colours[split])
         if function_type == 'poly':
-            # ax[split].axvline(x=x_min_slope, color = 'black', label=f'Cutoff: {x_min_slope:.3f}', alpha=1.0, linewidth=5)
             ax[split].axvline(x=sorted_x[left_idx], color='gray', label = 'Hard Cases',  linestyle='--')
             ax[split].axvline(x=sorted_x[right_idx], color='gray',  linestyle='--')
             split_score.append(x_min_slope)
             print(left_idx)
             print(right_idx)
 
-        # if split == 6:
         ax[split].fill_between(sorted_x, lower_bounds, upper_bounds, color=colours[split], alpha=0.3, label=r'$\pm  1 \sigma$')
         ax[split].set_xlabel('LPIPS', fontsize = 14)
         ax[split].set_ylim(25, 100)
         ax[split].tick_params(axis='both', labelsize=12)
-        # ax[split].set_xlim(0.0, 0.8)
         ax[split].set_ylabel('CLIP-Score', fontsize = 14)
         ax[split].legend(loc='lower left', fontsize = 12)
         ax[split].grid(True)
@@ -246,26 +240,24 @@ def plot_new_data(sim_data, poly, function_type):
         cases.append([sorted_x[left_idx], sorted_x[right_idx]])
         sorted_x_bounds.append(sorted_x)
 
-    fig.suptitle(r'Prompt + Image Interpolation Semantic Change', fontsize = 14)
+    if selection == 'image_':
+        fig.suptitle(r'Prompt + Image Interpolation Semantic Change', fontsize = 14)
+    else:
+        fig.suptitle(r'Prompt Interpolation Semantic Change', fontsize = 14)
     plt.tight_layout()
-    plt.savefig(f'./{function_type}/image_entire_best_fit_{poly}_no_avg_0.png')
+    plt.savefig(f'./{function_type}/{selection}entire_best_fit_{poly}.png')
     plt.cla()
     plt.clf()
 
+options = ['caption_', 'image_']
 
+for selection in options:
 
-sim_data = np.load('image_sim_data_final.npy', allow_pickle=True)
-# for poly in tqdm(range(1,11)):
-os.makedirs(f'poly', exist_ok=True)
-plot_new_data(sim_data, 10, 'poly')
-np.save('image_split_score.npy', np.array(split_score, dtype=object))
-np.save('image_bounds.npy', np.array(bounds, dtype=object))
-np.save('image_x_bounds.npy',np.array(sorted_x_bounds, dtype=object))
-np.save('image_hard_case.npy', np.array(cases, dtype=object))
+    sim_data = np.load(f'{selection}sim_data_final.npy', allow_pickle=True)
 
-# plot_new_data(sim_data,0, 'gaus')
-# plot_new_data(sim_data,0, 'fourier')
-# plot_new_data(sim_data,0, 'exp')
-# plot_new_data(sim_data,0, 'log')
-# plot_new_data(sim_data,0, 'power')
-# plot_new_data(sim_data,0, 'sig')
+    os.makedirs(f'poly', exist_ok=True)
+    plot_new_data(sim_data, 10, 'poly', selection=selection)
+    np.save(f'{selection}split_score.npy', np.array(split_score, dtype=object))
+    np.save(f'{selection}bounds.npy', np.array(bounds, dtype=object))
+    np.save(f'{selection}x_bounds.npy',np.array(sorted_x_bounds, dtype=object))
+    np.save(f'{selection}hard_case.npy', np.array(cases, dtype=object))
