@@ -29,7 +29,7 @@
 
 - **2.1 Stable-Diffusion-Latent-Space:**
   - Copy the contents of `replace-latent-space-explorer/` into the project folder Stable-Diffusion-Latent-Space-Explorer.
-  - cd to attention-interpolation-diffusion
+  - cd to Stable-Diffusion-Latent-Space-Explorer
   - Run the interpolation:
     ```bash
     nohup python run_interpolation_experiment.py &
