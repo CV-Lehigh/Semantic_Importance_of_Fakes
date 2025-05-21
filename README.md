@@ -1,4 +1,4 @@
-## Data Generation
+## 1. Data Generation
 
 ### Pre-defined **TO DO**
 1. Download the set of increasing manipulations using this link <> and place it into your ./data folder
@@ -14,7 +14,7 @@
 
 At this point you should have in your ./data/laion-5B folder 5 newly greated and populated folders image_prompt_close_PAID, image_prompt_close_sphere_768, prompt_close_PAID, prompt_close_sphere_768, prompt_close_linear_768
 
-## Data Fitting and labeling
+### Data Fitting and labeling
 1. Navigate to the Semantic_Importance_of_Fakes folder
 2. ```conda env create -f environment.yaml``` (python==3.10.16)
 3. ```conda activate siof```
@@ -22,6 +22,6 @@ At this point you should have in your ./data/laion-5B folder 5 newly greated and
 5. Run ```python fit.py``` finds the best fit curves, and defines the hard case and easy case parameters discussed in section 3.2 of the paper.
 6. Run ```python select_images.py``` labels each data pair (original image, manipulated image) and generates the required triplets (original image, semantically matching manipulated image, semantically non-matching manipulated image) -- note this applyies the probabilistic pseudo-labeling so each time this is run the labels of the hard cases will change.
 
-## Training
+## 2. Training
 1. Run ```nohup python ViT_siamese.py > training_log 2&>1 &``` Trains the easy case initially
 2. Cmment out easy case training and uncomment the hard case then run the same code again
