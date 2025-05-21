@@ -1,3 +1,5 @@
+** NOTE: where it says YOUR DATA PATH enter path to ./data/ **
+
 ## 1. Data Generation
 
 ### Pre-defined **TO DO**
@@ -12,7 +14,18 @@
     2.2:  Copy and past the files in replace_attention_diffusion in to the attention-interpolation-diffusion project and run ```run_interpolation_experiment.py```. Consider using nohup this takes about 24 hours.
 
 
-At this point you should have in your ./data/laion-5B folder 5 newly greated and populated folders image_prompt_close_PAID, image_prompt_close_sphere_768, prompt_close_PAID, prompt_close_sphere_768, prompt_close_linear_768
+At this point you should have in your './data/laion-5B' folder 5 newly greated and populated folders image_prompt_close_PAID, image_prompt_close_sphere_768, prompt_close_PAID, prompt_close_sphere_768, prompt_close_linear_768
+Semantic Importance of Fakes 
+ ┬  
+ ├ [DIR] data/laion-5B   
+     ┬  
+     ├ [DIR] img_emb
+     ├ [DIR] img_emb_1_5
+     ├ [DIR] image_prompt_close_PAID
+     ├ [DIR] prompt_close_PAID_0  
+     ├ [DIR] prompt_close_sphere_768  
+     ├ [DIR] prompt_close_linear_768  
+     └ [DIR] image_prompt_close_sphere_768
 
 ### Data Fitting and labeling
 1. Navigate to the Semantic_Importance_of_Fakes folder
@@ -23,5 +36,8 @@ At this point you should have in your ./data/laion-5B folder 5 newly greated and
 6. Run ```python select_images.py``` labels each data pair (original image, manipulated image) and generates the required triplets (original image, semantically matching manipulated image, semantically non-matching manipulated image) -- note this applyies the probabilistic pseudo-labeling so each time this is run the labels of the hard cases will change.
 
 ## 2. Training
-1. Run ```nohup python ViT_siamese.py > training_log 2&>1 &``` Trains the easy case initially
-2. Cmment out easy case training and uncomment the hard case then run the same code again
+1. Run ```nohup python ViT_siamese.py > training_log 2&>1 &``` Trains the easy case initially -- Fill in line 377 with desred selection (caption, image, all)
+2. Comment out easy case training and uncomment the hard case then run the same code again -- Place best model path in line 418
+
+## 3. Evaluate
+1. Run ``` python evalaute.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
