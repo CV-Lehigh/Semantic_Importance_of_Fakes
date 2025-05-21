@@ -77,7 +77,7 @@ for li in sets:
 
     i_value = 0
     ##split based on interpoltion method
-    for split in range(len(non_matching_scores)-1):
+    for split in range(len(non_matching_scores)):
         with open(f'{add_in}/{add_in}poly_10_func_{split}.pkl', 'rb') as f:
             best_fit = pickle.load(f)
         cut_off = non_matching_scores[split]
@@ -108,16 +108,11 @@ for li in sets:
                 elif x_value < left_bound:
                     easy_items.append([file_paths[split][index][0], file_paths[split][index][1], 0])
 
-
-
-# np.savez('./data_selection/1std_hard_cases_cnt_random_trip.npz', **hard_items)
-# np.savez('./data_selection/1std_easy_cases_cnt_random_trip.npz', **easy_items, dtype=object)
-
 new_easy = make_zipped_triplets_and_doubles(easy_items)
 new_hard = make_zipped_triplets_and_doubles(hard_items)
 
-np.save(f'./data_selection/1std_{selection}_hard_cases_cnt_random_trip_close_only.npy', np.array(new_hard, dtype=object))
-np.save(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only.npy', np.array(new_easy, dtype=object))
+np.save(f'./data_selection/1std_{selection}_hard_cases_cnt_random_trip_close_only_data.npy', np.array(new_hard, dtype=object))
+np.save(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only_data.npy', np.array(new_easy, dtype=object))
 
 combined = new_easy + new_hard
 unique_anchors = set(item[0] for item in combined)

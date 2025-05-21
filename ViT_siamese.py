@@ -386,10 +386,10 @@ contrastive_loss = contrastive_loss_func
 optimizer = AdamW(model.parameters(), lr=3e-5, weight_decay=1e-2)
 best_loss = float('inf')
 
-easy_val_set = np.load('./data_selection/validation_easy.npy', allow_pickle=True)
-hard_val_set = np.load('./data_selection/validation_hard.npy',  allow_pickle=True)
+easy_val_set = np.load('./data_selection/validation_easy_data.npy', allow_pickle=True)
+hard_val_set = np.load('./data_selection/validation_hard_data.npy',  allow_pickle=True)
 
-data_easy = np.load(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only.npy', allow_pickle=True)
+data_easy = np.load(f'./data_selection/1std_{selection}_easy_cases_cnt_random_trip_close_only_data.npy', allow_pickle=True)
 data_easy_train, data_easy_val = generate_splits(data_easy)
 
 
