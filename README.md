@@ -77,4 +77,4 @@ generates LPIPS and CLIP-Scores for each pair (original image, manipulated image
 
 ## 3. Evaluate
 1. Run ``` python evalaute.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
-    1.1 You can use the pretrained models avaoilable here <>
+    1.1 You can use the pretrained models avaoilable here: [Pre-trained_weights](https://drive.google.com/drive/folders/1xr4T_7dXJ3LV_zumrI08SxdwoycRVDSn?usp=sharing)
