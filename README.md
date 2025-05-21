@@ -28,7 +28,8 @@
 #### 🔄 Run the interpolation scripts
 
 - **2.1 Stable-Diffusion-Latent-Space:**
-  - Copy the contents of `replace-latent-space-explorer/` into the project folder.
+  - Copy the contents of `replace-latent-space-explorer/` into the project folder Stable-Diffusion-Latent-Space-Explorer.
+  - cd to attention-interpolation-diffusion
   - Run the interpolation:
     ```bash
     nohup python run_interpolation_experiment.py &
@@ -36,7 +37,8 @@
     > *For linear prompt interpolation, edit `prompt_interpolation.yaml`: set `output_path` and change `interpolation method` to `lerp`. This may take ~24 hours.*
 
 - **2.2 PAID Interpolation:**
-  - Copy the contents of `replace_attention_diffusion/` into the project folder.
+  - Copy the contents of `replace_attention_diffusion/` into the project folder attention-interpolation-diffusion.
+  - cd to attention-interpolation-diffusion
   - Run:
     ```bash
     nohup python run_interpolation_experiment.py &
