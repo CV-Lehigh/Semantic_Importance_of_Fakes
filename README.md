@@ -51,6 +51,8 @@ Once complete, your `./data/laion-5B/` directory should contain:
 - `prompt_close_PAID_0/`  
 - `prompt_close_sphere_768/`  
 - `prompt_close_linear_768/`
+- `img_emb/`
+- `img_emb_1_5`
 
 ---
 
@@ -64,7 +66,7 @@ Once complete, your `./data/laion-5B/` directory should contain:
    
 3. Run:
     ```bash
-   nohup python plot.py > plot.log 2&>1 &
+   python plot.py > plot.log 2&>1 &
 generates LPIPS and CLIP-Scores for each pair (original image, manipulated image)
 
 4. Run: `bash python fit.py` finds the best fit curves, and defines the hard case and easy case parameters discussed in section 3.2 of the paper.
@@ -74,9 +76,10 @@ generates LPIPS and CLIP-Scores for each pair (original image, manipulated image
    5.1 Between lines 43 - 57 decide which data split to run (all, image, caption)
 
 ## 2. Training
-1. Run ```nohup python ViT_siamese.py > training_log 2&>1 &``` Trains the easy case initially -- Fill in line 377 with desred selection (caption, image, all)
+1. Run ```python ViT_siamese.py > training_log 2&>1 &``` Trains the easy case initially -- Fill in line 377 with desred selection (caption, image, all)
 2. Comment out easy case training and uncomment the hard case then run the same code again -- Place best model path in line 418
 
 ## 3. Evaluate
-1. Run ``` python evalaute.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
+1. Run ``` python evaluate.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
+   
     1.1 You can use the pretrained models avaoilable here: [Pre-trained_weights](https://drive.google.com/drive/folders/1xr4T_7dXJ3LV_zumrI08SxdwoycRVDSn?usp=sharing)
