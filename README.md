@@ -80,6 +80,7 @@ generates LPIPS and CLIP-Scores for each pair (original image, manipulated image
 2. Comment out easy case training and uncomment the hard case then run the same code again -- Place best model path in line 418
 
 ## 3. Evaluate
-1. Run ``` python evaluate.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
-   
-    1.1 You can use the pretrained models avaoilable here: [Pre-trained_weights](https://drive.google.com/drive/folders/1xr4T_7dXJ3LV_zumrI08SxdwoycRVDSn?usp=sharing)
+1. Downlad [CSI-IMD](https://github.com/csiimd/csiimd) and [Reddit-Prov](https://github.com/CVRL/Reddit_Provenance_Datasets) into the './data/laion-5B' folder
+2. Download [GSV Cities](https://github.com/amaralibey/gsv-cities) and [Road Vehicle Image Dataset](https://www.kaggle.com/datasets/ashfakyeafi/road-vehicle-images-dataset) (Only needed for CSI-IMD)
+3. Run ``` python evaluate.py``` -- fill in lines 358 and 359 with desired selection (caption, image, all) and cirriculum (easy or hard)
+    3.1 You can use the pretrained models avaoilable here: [Pre-trained_weights](https://drive.google.com/drive/folders/1xr4T_7dXJ3LV_zumrI08SxdwoycRVDSn?usp=sharing)
